@@ -1,0 +1,95 @@
+﻿@model Site.Models.UserViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_LayoutOut.cshtml";
+}
+
+<div id="loginbox" style="margin-top:50px" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+
+    <div class="row">
+        <div class="col-sm-12" style="padding: 20px;">
+            <center>
+                <img src="~/images/logo/small/logo.png" class="img-responsive" style="height: 60px; width: auto;" />
+            </center>
+        </div>
+    </div>
+
+    <div class="panel panel-black">
+        <div class="panel-heading">
+            <div class="panel-title">Login</div>
+        </div>
+
+        <div style="padding-top:30px" class="panel-body">
+
+            @if (ViewBag.Mensagem != null)
+            {
+                <div class="alert alert-danger alert-dismissible">
+                    @ViewBag.Mensagem
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+
+            <form id="frmLogin" asp-controller="User" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-user"></i>
+                                </span>
+                                <input class="form-control" asp-for="Cpf" placeholder="CPF" maxlength="11">
+                            </div>
+                            <span asp-validation-for="Cpf" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-lock"></i>
+                                </span>
+                                <input class="form-control" asp-for="Senha" placeholder="Senha">
+                            </div>
+                            <span asp-validation-for="Senha" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <div class="form-check">
+                                <div class="checkbox">
+                                    <input id="cbxLembrar" asp-for="Lembrar" />
+                                    <label for="cbxLembrar">Lembrar</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-6">
+                        <div style="float: right" class="form-group">
+                            <button id="btnLogin" type="submit" class="btn btn-success">
+                                <span class="glyphicon glyphicon-log-in"></span> Entrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts{ 
+    <script type="text/javascript">
+        $("#frmLogin").on("submit", function () {
+            beginLoadingButton($("#btnLogin"), "glyphicon-log-in");
+        });
+    </script>
+}

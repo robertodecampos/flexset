@@ -1,0 +1,12 @@
+﻿.btn-menu-usuario {
+    color: black !important;
+    background-color: white !important;
+    -webkit-border-radius: 100px !important;
+    height: 34px !important;
+    line-height: 0 !important;
+    font-size: x-large !important;
+}
+
+.btn-menu-usuario:focus {
+    background-color: white !important;
+}

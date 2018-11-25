@@ -1,0 +1,25 @@
+﻿@model Site.Models.UserViewModels.PersonalInformationsViewModal
+
+<div class="row">
+    <div class="col-md-12">
+        <div style="margin-bottom: 25px" class="form-group">
+            <input class="form-control" asp-for="Nome" placeholder="Nome">
+            <span asp-validation-for="Nome" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div style="margin-bottom: 25px" class="form-group">
+            <input class="form-control" asp-for="Email" placeholder="E-Mail">
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div style="margin-bottom: 25px" class="form-group">
+            <input class="form-control" asp-for="DataNascimento" placeholder="E-Mail">
+            <span asp-validation-for="DataNascimento" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+

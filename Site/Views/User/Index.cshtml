@@ -1,0 +1,408 @@
+﻿@using System.Linq;
+@using Site.Controllers;
+
+@{
+    ViewData["Title"] = "Usuários";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="row">
+    <div class="col-sm-6 text-left">
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group">
+                <button id="btnFiltrar" class="btn btn-default">
+                    <span class="icon glyphicon glyphicon-filter"></span> Filtrar
+                </button>
+            </div>
+            <div class="btn-group">
+                <button id="btnRemoverUsuarios" class="btn btn-danger" style="display: none;">
+                    <span class="icon glyphicon glyphicon-trash"></span> Remover
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 text-right">
+        <button id="btnCadastrarUsuario" class="btn btn-primary">
+            <span class="icon glyphicon glyphicon-plus"></span> Cadastrar
+        </button>
+    </div>
+</div>
+
+<br />
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <td>#</td>
+                <td>Nome</td>
+                <td>CPF</td>
+                <td>Data de Nascimento</td>
+                <td>E-Mail</td>
+                <td>Níveis de Acesso</td>
+                <td>Editar</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (KeyValuePair<UserModel, string> user in ViewBag.Usuarios)
+            {
+                UserModel usuario = user.Key;
+                string roles = user.Value;
+
+                <tr>
+                    <td class="text-center">
+                        <div class="checkbox checkbox-inline">
+                            <input id="@("cbxEditar" + @usuario.Id)" type="checkbox" name="usuarios" value="@usuario.Id">
+                            <label for="@("cbxEditar" + @usuario.Id)"></label>
+                        </div>
+                    </td>
+                    <td>@usuario.Nome</td>
+                    <td>@usuario.Cpf</td>
+                    <td>@usuario.DataNascimento.ToString("dd/MM/yyyy")</td>
+                    <td>@usuario.Email</td>
+                    <td>@roles</td>
+                    <td class="text-center">
+                        <button id="btnAlterar@(usuario.Id)" class="btn btn-xs btn-primary" onclick="OpenModalAlterarUsuario(@usuario.Id)"><span id="iconEdit@(usuario.Id)" class="glyphicon glyphicon-edit"></span></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="form-group form-inline">
+            <select id="cbPeerPage" class="form-control">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="75">75</option>
+                <option value="100">100</option>
+            </select> itens por página
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-9 text-right">
+        <nav>
+            <ul class="pagination" style="margin-top: 0; margin-bottom: 0;">
+                @{
+                    int separacao = ((ViewBag.Page == 1) || (ViewBag.Page == ViewBag.CountPages)) ? 2 : 1;
+                    for (int i = 1; i <= ViewBag.CountPages; i++)
+                    {
+                        if ((i == 1) || ((i >= ViewBag.Page - separacao) && (i <= ViewBag.Page + separacao)) || (i == ViewBag.CountPages))
+                        {
+                            <li class="page-item @(i == ViewBag.Page ? "active" : "")">
+                                <a class="page-link" onclick="alterarPagina(@i)" href="#">
+                                    @i
+                                </a>
+                            </li>
+                        }
+                    }
+                }
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Modal de Criação de Usuário -->
+<div id="mdCreateUsuario" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div id="contentModalCreateUsuario" class="modal-content">
+        </div>
+    </div>
+</div>
+<!-- Modal de Criação de Usuário -->
+
+<!-- Modal de Alteração de Usuário -->
+<div id="mdAlterarUsuario" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div id="contentModalAlterarUsuario" class="modal-content">
+        </div>
+    </div>
+</div>
+<!-- Modal de Alteração de Usuário -->
+
+<!-- Modal de Filtro -->
+<div id="mdFilter" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Filtro</h4>
+            </div>
+            <form id="frmFiltro" role="form">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label for="#edtNome">Nome</label>
+                                <input id="edtNome" name="nome" class="form-control" value="@ViewBag.Filtro.Nome" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label for="#edtCpf">CPF</label>
+                                <input id="edtCpf" name="cpf" maxlength="11" class="form-control" value="@ViewBag.Filtro.Cpf" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label for="#edtEmail">E-Mail</label>
+                                <input id="edtEmail" name="email" class="form-control" value="@ViewBag.Filtro.Email" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label for="#edtDia">Dia de Nascimento</label>
+                                <input id="edtDia" name="dia" type="number" min="0" max="31" class="form-control" value="@ViewBag.Filtro.Dia" />
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label for="#edtMes">Mês de Nascimento</label>
+                                <input id="edtMes" name="mes" type="number" min="0" max="12" class="form-control" value="@ViewBag.Filtro.Mes" />
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label for="#edtAno">Ano de Nascimento</label>
+                                <input id="edtAno" name="ano" type="number" min="0" class="form-control" value="@ViewBag.Filtro.Ano" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label for="#edtDataInicial">Data de Nascimento Inicial</label>
+                                <input id="edtDataNascimentoInicial" name="dataNascimentoInicial" type="date" class="form-control" value="@(ViewBag.Filtro.DataNascimentoInicial == null ? "" : ((DateTime)ViewBag.Filtro.DataNascimentoInicial).ToString("yyyy-MM-dd"))" />
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label for="#edtDataFinal">Data de Nascimento Final</label>
+                                <input id="edtDataNascimentoFinal" name="datanascimentoFinal" type="date" class="form-control" value="@(ViewBag.Filtro.DataNascimentoFinal == null ? "" : ((DateTime)ViewBag.Filtro.DataNascimentoFinal).ToString("yyyy-MM-dd"))" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label for="#divFuncoes">Funções</label>
+                                <div id="divFuncoes" class="form-check">
+                                    @foreach (RoleModel funcao in ViewBag.Funcoes)
+                                    {
+                                        <div class="checkbox checkbox-inline">
+                                            <input type="checkbox" id="@("cbxFuncao" + @funcao.NormalizedNome)" name="funcoes" value="@funcao.Id" @(((ViewBag.filtro.Funcoes != null) && (((IEnumerable<int>)ViewBag.filtro.Funcoes).Where(a => a.Equals(@funcao.Id)).Count() > 0)) ? "checked=\"true\"" : "") />
+                                            <label for="@("cbxFuncao" + @funcao.NormalizedNome)">@funcao.Nome</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-xs-6 text-left">
+                            <button id="btnLimparFiltro" type="button" class="btn btn-primary">
+                                Limpar
+                            </button>
+                        </div>
+                        <div class="col-xs-6 text-right">
+                            <button class="btn btn-success">
+                                Aplicar <span class="icon glyphicon glyphicon-filter"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal de Filtro -->
+
+@section Scripts{
+    <script type="text/javascript" src="~/js/bootbox.min.js"></script>
+    <script type="text/javascript">
+
+        $("#cbPeerPage").val(@ViewBag.PeerPage).on("change", function () {
+            atualizarPagina();
+        });
+
+        $("#btnCadastrarUsuario").on("click", function () {
+
+            beginLoadingButton(this, "glyphicon-plus");
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action(nameof(Site.Controllers.UserController.CreateModal), "User")',
+                success: function (result) {
+                    $('#contentModalCreateUsuario').html(result);
+                    endLoadingButton($("#btnCadastrarUsuario"), "glyphicon-plus");
+                    $('#mdCreateUsuario').modal();
+                },
+                error: function (err) {
+                    endLoadingButton($("#btnCadastrarUsuario"), "glyphicon-plus");
+                    bootbox.alert("Não foi possível carregar o formulário de cadastro de usuário!");
+                }
+            });
+        });
+
+        $("input[name='usuarios']").on("click", function () {
+            if ($("input[name='usuarios']:checked").length == 0)
+                $("#btnRemoverUsuarios").css("display", "none");
+            else
+                $("#btnRemoverUsuarios").css("display", "block");
+        });
+
+        $("#btnRemoverUsuarios").on('click', function () {
+            beginLoadingButton(this, "glyphicon-task");
+
+            let usuarios = $("input[name='usuarios']:checked");
+            let qtdeUsuarios = usuarios.length;
+
+            bootbox.confirm({
+                message: "Deseja realmente remover " +
+                    (qtdeUsuarios > 1 ? "os " + qtdeUsuarios + " usuários marcados" : " o usuário marcado") +
+                    "?<br />Esta ação não poderá ser revertida",
+                buttons: {
+                    confirm: {
+                        label: 'Sim, confirmo',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'Cancelar',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (!result) {
+                        endLoadingButton($("#btnRemoverUsuarios"), "glyphicon-task");
+                        return;
+                    }
+
+                    let arrayUsuarios = new Array();
+
+                    usuarios.each(function (index) {
+                        arrayUsuarios.push($(this).val());
+                    });
+
+                    $.ajax({
+                        type: 'post',
+                        url: '@Url.Action(nameof(UserController.Remove), "User")',
+                        data: {
+                            users: arrayUsuarios
+                        },
+                        success: function (result) {
+                            endLoadingButton($("#btnRemoverUsuarios"), "glyphicon-task");
+
+                            if (result.removidos == qtdeUsuarios)
+                                bootbox.alert("Todos os usuários marcados foram removidos com sucesso!", function () {
+                                    atualizarPagina();
+                                });
+                            else
+                                bootbox.alert(result.removidos + " de " + qtdeUsuarios + " usuário(s) marcado(s) foi(ram) removido(s)!", function () {
+                                    atualizarPagina();
+                                });
+                        },
+                        error: function (err) {
+                            endLoadingButton($("#btnRemoverUsuarios"), "glyphicon-task");
+                            bootbox.alert("Não foi possível remover os usuários marcados!");
+                        }
+                    });
+                }
+            });
+        });
+
+        $("#btnFiltrar").on("click", function () {
+            $("#mdFilter").modal("show");
+        });
+
+        $("#frmFiltro").on("submit", function (e) {
+            e.preventDefault();
+
+            beginLoadingButton(this, "glyphicon-filter");
+
+            location.href = '@Url.Action(nameof(Site.Controllers.UserController.Index))?' + getParametrosFiltro(false);
+        });
+
+        $("#btnLimparFiltro").on('click', function () {
+            $("#frmFiltro input[type!='hidden']").val("");
+            $("#frmFiltro input[type='checkbox']").removeAttr("checked");
+        });
+
+        function getParametrosFiltro(returnArray) {
+            let filtros = new Array();
+
+            if ($("#cbPeerPage").val() != '')
+                filtros.push(new Array('peerpage', $("#cbPeerPage").val()));
+            if ($("#edtNome").val() != '')
+                filtros.push(new Array('nome', $("#edtNome").val()));
+            if ($("#edtCpf").val() != '')
+                filtros.push(new Array('cpf', $("#edtCpf").val()));
+            if ($("#edtEmail").val() != '')
+                filtros.push(new Array('email', $("#edtEmail").val()));
+            if ($("#edtDia").val() > 0)
+                filtros.push(new Array('dia', $("#edtDia").val()));
+            if ($("#edtMes").val() > 0)
+                filtros.push(new Array('mes', $("#edtMes").val()));
+            if ($("#edtAno").val() > 0)
+                filtros.push(new Array('ano', $("#edtAno").val()));
+            if ($("#edtDataNascimentoInicial").val() != undefined && ($("#edtDataNascimentoInicial").val() != ''))
+                filtros.push(new Array('dataNascimentoInicial', $("#edtDataNascimentoInicial").val()));
+            if (($("#edtDataNascimentoFinal").val() != undefined) && ($("#edtDataNascimentoFinal").val() != ''))
+                filtros.push(new Array('dataNascimentoFinal', $("#edtDataNascimentoFinal").val()));
+            if ($("input[name='funcoes']:checked").length > 0) {
+                let funcoes = new Array();
+                $("input[name='funcoes']:checked").each(function () {
+                    funcoes.push(new Array('funcoes', $(this).val()));
+                });
+                filtros.push(new Array('funcoes', funcoes));
+            }
+
+            if (returnArray)
+                return filtros;
+            else
+                return arrayToUrlParameters(filtros);
+        }
+
+        function atualizarPagina() {
+            let parametros = getParametrosFiltro(false);
+            location.href = '@Url.Action((string)ViewBag.Action, (string)@ViewBag.Controler)' + ((parametros != '') ? '?' + getParametrosFiltro(false) : '');
+        }
+
+        function alterarPagina(page) {
+            let parametros = getParametrosFiltro(false);
+            location.href = '@Url.Action((string)ViewBag.Action, (string)@ViewBag.Controler)?page=' + page + ((parametros != '') ? '&' + getParametrosFiltro(false) : '');
+        }
+
+        function OpenModalAlterarUsuario(id) {
+
+            beginLoadingButton($("#btnAlterar" + id), "glyphicon-edit");
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action(nameof(Site.Controllers.UserController.AlterModal), "User")?id=' + id,
+                success: function (result) {
+                    $('#contentModalAlterarUsuario').html(result);
+                    endLoadingButton($("#btnAlterar" + id), "glyphicon-edit");
+                    $('#mdAlterarUsuario').modal();
+                },
+                error: function (err) {
+                    endLoadingButton($("#btnAlterar" + id), "glyphicon-edit");
+                    bootbox.alert("Não foi possível carregar o formulário de alteração deste usuário!");
+                }
+            });
+        }
+
+    </script>
+
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

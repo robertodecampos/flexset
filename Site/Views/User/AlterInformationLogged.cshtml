@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "Alterar Minhas Informações";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="panel panel-black">
+    <div class="panel-heading">
+        <div class="panel-title">Informações Pessoais</div>
+    </div>
+    <div style="padding-top:30px" class="panel-body">
+        <form asp-controller="User" asp-action="@nameof(Site.Controllers.UserController.AlterPersonalInformationsLogged)" method="post" role="form">
+
+            @Html.PartialAsync("_PersonalInformationsPartial.cshtml", new Site.Models.UserViewModels.PersonalInformationsViewModal()
+            {
+                Nome = ViewBag.User.Nome,
+                Email = ViewBag.User.Email,
+                DataNascimento = ViewBag.User.DataNascimento
+            }).Result
+
+            @if (TempData["MensagemAlterPersonalInformations"] != null)
+            {
+                <div class="alert alert-danger">@TempData["MensagemAlterPersonalInformations"]</div>
+            }
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div style="float: right" class="form-group">
+                        <div class="controls">
+                            <button id="btnAlterar" type="submit" class="btn btn-success">
+                                Alterar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="panel panel-black">
+    <div class="panel-heading">
+        <div class="panel-title">Alterar Senha</div>
+    </div>
+    <div style="padding-top:30px" class="panel-body">
+        <form asp-controller="User" asp-action="@nameof(Site.Controllers.UserController.AlterPassword)" method="post" role="form">
+
+            @Html.PartialAsync("_AlterPasswordPartial.cshtml").Result
+
+            @if (TempData["MensagemAlterPassword"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible">
+                    @TempData["MensagemAlterPassword"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div style="float: right" class="form-group">
+                        <div class="controls">
+                            <button id="btnAlterar" type="submit" class="btn btn-success">
+                                Alterar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

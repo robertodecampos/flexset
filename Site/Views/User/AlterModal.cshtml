@@ -1,0 +1,95 @@
+﻿@using Site.Models.UserViewModels
+@using Site.Controllers
+
+@model AlterViewModel
+
+@{
+    Layout = null;
+}
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">Alterar Usuário</h4>
+</div>
+<form id="frmAlterarUsuario" role="form">
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div style="margin-bottom: 25px" class="form-group">
+                    <input class="form-control" asp-for="Nome" placeholder="Nome">
+                    <span asp-validation-for="Nome" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div style="margin-bottom: 25px" class="form-group">
+                    <input class="form-control" asp-for="Email" placeholder="E-Mail">
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div style="margin-bottom: 25px" class="form-group">
+                    <input class="form-control" asp-for="DataNascimento">
+                    <span asp-validation-for="DataNascimento" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                @Html.PartialAsync("_FuncoesPartial", new PersonalInformationsAndFunctionsViewModel {
+                    Funcoes = Model.Funcoes
+                }).Result
+            </div>
+        </div>
+
+        @if (ViewData["erro"] == null)
+        {
+            <div id="alertAlterarUsuario" class="alert alert-danger" style="display: none;"></div>
+        }
+        else
+        {
+            <div id="alertAlterarUsuario" class="alert alert-danger">@ViewData["erro"]</div>
+        }
+    </div>
+    <div class="modal-footer right">
+        <input type="hidden" asp-for="Id" />
+        <button id="btnSalvarAlteracoesUsuario" class="btn btn-success">
+            Alterar <span class="icon glyphicon glyphicon-edit"></span>
+        </button>
+    </div>
+</form>
+
+<script type="text/javascript">
+    $("#frmAlterarUsuario").validate();
+
+    $("#frmAlterarUsuario").on('submit', function (e) {
+        beginLoadingButton($("#btnSalvarAlteracoesUsuario"), "glyphicon-edit");
+
+        e.preventDefault();
+
+        if (!$("#frmAlterarUsuario").valid()) {
+            endLoadingButton($("#btnSalvarAlteracoesUsuario"), "glyphicon-edit");
+            return;
+        }
+
+        $.ajax({
+            type: 'post',
+            url: '@Url.Action(nameof(UserController.AlterModal), "User")',
+            data: $("#frmAlterarUsuario").serializeArray(),
+            success: function (result) {
+                console.log(result);
+
+                if (result.trim() == '')
+                    atualizarPagina();
+
+                $('#contentModalAlterarUsuario').html(result);
+            },
+            error: function (err) {
+                $('#alertAlterarUsuario').html("Ops, ocorreu um problema ao tentar cadastrar este usuário!");
+                $('#alertAlterarUsuario').show();
+                endLoadingButton($("#btnSalvarAlterarUsuario"), "glyphicon-edit");
+            }
+        });
+    });
+</script>

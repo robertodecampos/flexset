@@ -1,0 +1,50 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">Cadastrar Usuário</h4>
+</div>
+<form id="frmCreateUsuario" role="form">
+    <div class="modal-body">
+        @Html.PartialAsync("_PersonalCreatePartial").Result
+    </div>
+    <div class="modal-footer right">
+        <button id="btnSalvarUsuario" class="btn btn-success">
+            Cadastrar <span id="iconSaveCreateUsuario" class="icon glyphicon glyphicon-plus"></span>
+        </button>
+    </div>
+</form>
+
+<script type="text/javascript">
+    $("#frmCreateUsuario").validate();
+
+    $("#frmCreateUsuario").on('submit', function (e) {
+        beginLoadingButton($("#btnSalvarUsuario"), "glyphicon-plus");
+
+        e.preventDefault();
+
+        if (!$("#frmCreateUsuario").valid()) {
+            endLoadingButton($("#btnSalvarUsuario"), "glyphicon-plus");
+            return false;
+        }
+
+        $.ajax({
+            type: 'post',
+            url: '@Url.Action(nameof(Site.Controllers.UserController.CreateModal), "User")',
+            data: $("#frmCreateUsuario").serializeArray(),
+            success: function (result) {
+                if (result.trim() == '')
+                    atualizarPagina();
+
+                $('#contentModalCreateUsuario').html(result);
+            },
+            error: function (err) {
+                $('#alertCreateUsuario').html("Ops, ocorreu um problema ao tentar cadastrar este usuário!");
+                $('#alertCreateUsuario').show();
+                endLoadingButton($("#btnSalvarUsuario"), "glyphicon-plus");
+            }
+        });
+    });
+</script>

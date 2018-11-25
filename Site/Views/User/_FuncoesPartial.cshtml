@@ -1,0 +1,19 @@
+﻿@model Site.Models.UserViewModels.PersonalInformationsAndFunctionsViewModel
+
+<label>Níveis de Acesso</label>
+<div class="form-check">
+    @foreach (RoleModel funcao in ViewBag.Funcoes)
+    {
+        bool isChecked = false;
+        if (Model.Funcoes.Where(a => a.Equals(funcao.NormalizedNome)).Count() > 0)
+        {
+            isChecked = true;
+        }
+
+        <div class="form-check checkbox">
+            <input type="checkbox" id="@("cbxFuncao" + @funcao.NormalizedNome)" name="Funcoes" value="@funcao.NormalizedNome" @(isChecked ? "checked=\"checked\"" : "")>
+            <label for="@("cbxFuncao" + @funcao.NormalizedNome)">@funcao.Nome</label>
+        </div>
+    }
+    <span asp-validation-for="Funcoes" class="text-danger"></span>
+</div>

@@ -1,0 +1,44 @@
+﻿@model Site.Models.UserViewModels.CreateViewModel
+
+<div class="row">
+    <div class="col-md-6">
+        <div style="margin-bottom: 25px" class="form-group">
+            <input class="form-control" asp-for="Nome" placeholder="Nome">
+            <span asp-validation-for="Nome" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div style="margin-bottom: 25px" class="form-group">
+            <input class="form-control" asp-for="Cpf" placeholder="CPF" maxlength="11">
+            <span asp-validation-for="Cpf" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div style="margin-bottom: 25px" class="form-group">
+            <input class="form-control" asp-for="Email" placeholder="E-Mail">
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div style="margin-bottom: 25px" class="form-group">
+            <input class="form-control" asp-for="DataNascimento">
+            <span asp-validation-for="DataNascimento" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        @Html.PartialAsync("_FuncoesPartial").Result
+    </div>
+</div>
+
+@if (ViewData["erro"] == null)
+{
+    <div id="alertCreateUsuario" class="alert alert-danger" style="display: none;"></div>
+}
+else
+{
+    <div id="alertCreateUsuario" class="alert alert-danger">@ViewData["erro"]</div>
+}
