@@ -191,14 +191,14 @@ namespace Site.DAO
 
         public IList<UserModel> GetUsers(FiltroViewModel filtro, int limitInitial, int limitCount, MySqlTransaction transaction = null)
         {
+            var parameters = new List<MySqlParameter>();
+
             string sql = "SELECT a.*";
             sql += " FROM usuario a";
             sql += " INNER JOIN usuario_role b ON a.id = b.usuarioId AND b.removido = 0";
-            sql += " WHERE " + Filtrar(filtro, "a", "b");
+            sql += " WHERE " + Filtrar(filtro, "a", "b", parameters);
             sql += " GROUP BY a.id";
             sql += $" LIMIT {limitInitial}, {limitCount}";
-
-            var parameters = new List<MySqlParameter>();
 
             using (DataTable dt = _connection.ExecuteReader(sql, parameters, transaction))
             {
@@ -231,12 +231,12 @@ namespace Site.DAO
 
         public int CountUsers(FiltroViewModel filtro, MySqlTransaction transaction = null)
         {
+            var parameters = new List<MySqlParameter>();
+
             string sql = "SELECT COUNT(DISTINCT a.id) qtde";
             sql += " FROM usuario a";
             sql += " INNER JOIN usuario_role b ON a.id = b.usuarioId AND b.removido = 0";
-            sql += " WHERE " + Filtrar(filtro, "a", "b");
-
-            var parameters = new List<MySqlParameter>();
+            sql += " WHERE " + Filtrar(filtro, "a", "b", parameters);
 
             using (DataTable dt = _connection.ExecuteReader(sql, parameters, transaction))
             {
@@ -249,8 +249,11 @@ namespace Site.DAO
             // Destruir objetos necessários
         }
 
-        private string Filtrar(FiltroViewModel filtro, string aliasUsuario, string aliasusuarioRole)
+        private string Filtrar(FiltroViewModel filtro, string aliasUsuario, string aliasusuarioRole, IList<MySqlParameter> parametros)
         {
+            if (parametros == null)
+                throw new Exceptions.SiteException("O parâmetro \"parametros\" não pode ser nulo!");
+
             if (aliasUsuario != "")
                 aliasUsuario += ".";
             if (aliasusuarioRole != "")
@@ -259,23 +262,51 @@ namespace Site.DAO
             string sql = "a.removido = 0";
 
             if ((filtro.Nome != null) && (filtro.Nome.Trim() != ""))
-                sql += $" AND {aliasUsuario}nome LIKE '%{filtro.Nome.Trim()}%'";
+            {
+                sql += $" AND {aliasUsuario}nome LIKE @nome";
+                parametros.Add(new MySqlParameter("@nome", MySqlDbType.String) { Value = $"%{filtro.Nome.Trim()}%" });
+            }
             if ((filtro.Cpf != null) && (filtro.Cpf.Trim() != ""))
-                sql += $" AND {aliasUsuario}cpf LIKE '%{filtro.Cpf.Trim()}%'";
+            {
+                sql += $" AND {aliasUsuario}cpf LIKE @cpf";
+                parametros.Add(new MySqlParameter("@cpf", MySqlDbType.String) { Value = $"%{filtro.Cpf.Trim()}%" });
+            }
             if ((filtro.Email != null) && (filtro.Email?.Trim() != ""))
-                sql += $" AND {aliasUsuario}email LIKE '%{filtro.Email.Trim()}%'";
+            {
+                sql += $" AND {aliasUsuario}email LIKE @email";
+                parametros.Add(new MySqlParameter("@email", MySqlDbType.String) { Value = $"%{filtro.Email.Trim()}%" });
+            }
             if (filtro.Dia > 0)
-                sql += $" AND DAY({aliasUsuario}dataNascimento) = {filtro.Dia}";
+            {
+                sql += $" AND DAY({aliasUsuario}dataNascimento) = @dia";
+                parametros.Add(new MySqlParameter("@dia", MySqlDbType.Int32) { Value = filtro.Dia });
+            }
             if (filtro.Mes > 0)
-                sql += $" AND MONTH({aliasUsuario}dataNascimento) = {filtro.Mes}";
+            {
+                sql += $" AND MONTH({aliasUsuario}dataNascimento) = @mes";
+                parametros.Add(new MySqlParameter("@mes", MySqlDbType.Int32) { Value = filtro.Mes });
+            }
             if (filtro.Ano > 0)
-                sql += $" AND YEAR({aliasUsuario}dataNascimento) = {filtro.Ano}";
+            {
+                sql += $" AND YEAR({aliasUsuario}dataNascimento) = @ano";
+                parametros.Add(new MySqlParameter("@ano", MySqlDbType.Int32) { Value = filtro.Ano });
+            }
             if ((filtro.DataNascimentoInicial != null) && (filtro.DataNascimentoFinal != null))
-                sql += $" AND {aliasUsuario}dataNascimento BETWEEN '{((DateTime)filtro.DataNascimentoInicial).ToString("yyyy-MM-dd")}' AND '{((DateTime)filtro.DataNascimentoFinal).ToString("yyyy-MM-dd")}'";
+            {
+                sql += $" AND {aliasUsuario}dataNascimento BETWEEN @dataNascimentoInicial AND @dataNascimentoFinal";
+                parametros.Add(new MySqlParameter("@dataNascimentoInicial", MySqlDbType.String) { Value = ((DateTime)filtro.DataNascimentoInicial).ToString("yyyy-MM-dd") });
+                parametros.Add(new MySqlParameter("@dataNascimentoFinal", MySqlDbType.String) { Value = ((DateTime)filtro.DataNascimentoFinal).ToString("yyyy-MM-dd") });
+            }
             else if (filtro.DataNascimentoInicial != null)
-                sql += $" AND {aliasUsuario}dataNascimento >= '{((DateTime)filtro.DataNascimentoInicial).ToString("yyyy-MM-dd")}'";
+            {
+                sql += $" AND {aliasUsuario}dataNascimento >= @dataNascimentoInicial";
+                parametros.Add(new MySqlParameter("@dataNascimentoInicial", MySqlDbType.String) { Value = ((DateTime)filtro.DataNascimentoInicial).ToString("yyyy-MM-dd") });
+            }
             else if (filtro.DataNascimentoFinal != null)
-                sql += $" AND {aliasUsuario}dataNascimento <= '{((DateTime)filtro.DataNascimentoFinal).ToString("yyyy-MM-dd")}'";
+            {
+                sql += $" AND {aliasUsuario}dataNascimento <= @dataNascimentoFinal";
+                parametros.Add(new MySqlParameter("@dataNascimentoFinal", MySqlDbType.String) { Value = ((DateTime)filtro.DataNascimentoFinal).ToString("yyyy-MM-dd") });
+            }
             if ((filtro.Funcoes != null) && (filtro.Funcoes.Count > 0))
             {
                 sql += $" AND {aliasusuarioRole}roleId IN (";
