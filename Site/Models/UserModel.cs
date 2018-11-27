@@ -72,11 +72,11 @@ namespace Site.Models
             }
         }
 
-        public static IList<UserModel> GetUsers(UserViewModels.FiltroViewModel filtro, int limitInitial, int limitCount, Connection conn, MySqlTransaction transaction = null)
+        public static IList<UserModel> GetUsers(UserViewModels.FiltroViewModel filtro, string fieldOrder, Enumerators.Ordination ordination, int limitInitial, int limitCount, Connection conn, MySqlTransaction transaction = null)
         {
             using (var dao = new UserDAO(conn))
             {
-                return dao.GetUsers(filtro, limitInitial, limitCount, transaction);
+                return dao.GetUsers(filtro, fieldOrder, ordination, limitInitial, limitCount, transaction);
             }
         }
 

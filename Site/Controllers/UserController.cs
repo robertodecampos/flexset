@@ -9,7 +9,7 @@ using Site.Models;
 using Site.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Site.Exceptions;
-using Site.Models.ViewModel;
+using Site.Models._ViewModel;
 
 namespace Site.Controllers
 {
@@ -32,7 +32,7 @@ namespace Site.Controllers
         }
 
         [Authorize(Roles = "Administrador")]
-        public IActionResult Index(Pagination pagination, FiltroViewModel filtro)
+        public IActionResult Index(Pagination pagination, OrderViewModel order, FiltroViewModel filtro)
         {
             ViewBag.CountPages = Math.Ceiling((decimal)UserModel.CountUsers(filtro, _connection, null) / pagination.PeerPage);
             if (ViewBag.CountPages == 0)
@@ -44,11 +44,14 @@ namespace Site.Controllers
             ViewBag.Controller = "User";
             ViewBag.Action = nameof(Index);
             ViewBag.Filtro = filtro;
+            ViewBag.Ordination = order;
 
             LoadFuncoes();
 
             IList<UserModel> usuarios = UserModel.GetUsers(
                 filtro: filtro,
+                fieldOrder: order.Campo,
+                ordination: order.Ordenacao,
                 limitInitial: (pagination.Page * pagination.PeerPage) - pagination.PeerPage,
                 limitCount: pagination.PeerPage,
                 conn: _connection,

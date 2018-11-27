@@ -6,6 +6,8 @@ using Site.Exceptions;
 using MySql.Data.MySqlClient;
 using System.Data;
 using Site.Models.UserViewModels;
+using Site.Utils;
+using System.Linq;
 
 namespace Site.DAO
 {
@@ -189,8 +191,13 @@ namespace Site.DAO
             }
         }
 
-        public IList<UserModel> GetUsers(FiltroViewModel filtro, int limitInitial, int limitCount, MySqlTransaction transaction = null)
+        public IList<UserModel> GetUsers(FiltroViewModel filtro, string fieldOrder, Enumerators.Ordination ordination, int limitInitial, int limitCount, MySqlTransaction transaction = null)
         {
+            string[] fields = {"", "nome", "cpf", "dataNascimento", "email"};
+
+            if (!fields.Contains(fieldOrder))
+                throw new Exceptions.SiteException("Não foi informado um fieldOrder válido!");
+
             var parameters = new List<MySqlParameter>();
 
             string sql = "SELECT a.*";
@@ -198,6 +205,8 @@ namespace Site.DAO
             sql += " INNER JOIN usuario_role b ON a.id = b.usuarioId AND b.removido = 0";
             sql += " WHERE " + Filtrar(filtro, "a", "b", parameters);
             sql += " GROUP BY a.id";
+            if (fieldOrder != "")
+                sql += $" ORDER BY a.{fieldOrder} {ordination.ToString().ToUpper()}";
             sql += $" LIMIT {limitInitial}, {limitCount}";
 
             using (DataTable dt = _connection.ExecuteReader(sql, parameters, transaction))

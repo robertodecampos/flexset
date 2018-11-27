@@ -49,6 +49,10 @@
     border-bottom-color: #000;
 }
 
+th.ordination {
+    cursor: pointer;
+}
+
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
     /* Hide captions */

@@ -1,5 +1,6 @@
-﻿@using System.Linq;
-@using Site.Controllers;
+﻿@using System.Linq
+@using Site.Controllers
+@using Site.Utils
 
 @{
     ViewData["Title"] = "Usuários";
@@ -31,17 +32,35 @@
 
 <br />
 
+@{
+    string fieldOrder = "", ordinationOrder = "", iconOrder = "";
+
+    if (ViewBag.Ordination != null) {
+        fieldOrder = ViewBag.Ordination.Campo;
+        ordinationOrder = ViewBag.Ordination.Ordenacao == Enumerators.Ordination.Asc ? "asc" : "desc";
+        iconOrder = ordinationOrder == "asc" ? "glyphicon-sort-by-attributes" : (ordinationOrder == "desc" ? "glyphicon-sort-by-attributes-alt" : "");
+    }
+}
+
 <div class="table-responsive">
     <table class="table table-bordered table-hover">
         <thead>
             <tr>
-                <td>#</td>
-                <td>Nome</td>
-                <td>CPF</td>
-                <td>Data de Nascimento</td>
-                <td>E-Mail</td>
-                <td>Níveis de Acesso</td>
-                <td>Editar</td>
+                <th>#</th>
+                <th class="ordination" data-field-order="nome" data-ordination="@(fieldOrder == "nome" ? ordinationOrder : "")">
+                    Nome <span class="glyphicon @(fieldOrder == "nome" ? iconOrder : "")"></span>
+                </th>
+                <th class="ordination" data-field-order="cpf" data-ordination="@(fieldOrder == "cpf" ? ordinationOrder : "")">
+                    CPF <span class="glyphicon @(fieldOrder == "cpf" ? iconOrder : "")"></span>
+                </th>
+                <th class="ordination" data-field-order="dataNascimento" data-ordination="@(fieldOrder == "dataNascimento" ? ordinationOrder : "")">
+                    Data de Nascimento <span class="glyphicon @(fieldOrder == "dataNascimento" ? iconOrder : "")"></span>
+                </th>
+                <th class="ordination" data-field-order="email" data-ordination="@(fieldOrder == "email" ? ordinationOrder : "")">
+                    E-Mail <span class="glyphicon @(fieldOrder == "email" ? iconOrder : "")"></span>
+                </th>
+                <th>Níveis de Acesso</th>
+                <th>Editar</th>
             </tr>
         </thead>
         <tbody>
@@ -325,6 +344,23 @@
             $("#mdFilter").modal("show");
         });
 
+        $("th.ordination").on("click", function () {
+            let ordination = $(this).attr("data-ordination");
+
+            $("th.ordination[data-ordination!='']").attr("data-ordination", "");
+
+            if (ordination == "")
+                ordination = "asc";
+            else if (ordination == "asc")
+                ordination = "desc";
+            else
+                ordination = "";
+
+            $(this).attr("data-ordination", ordination);
+
+            alterarPagina(1);
+        });
+
         $("#frmFiltro").on("submit", function (e) {
             e.preventDefault();
 
@@ -373,14 +409,37 @@
                 return arrayToUrlParameters(filtros);
         }
 
+        function getParametrosOrdenacao(returnArray) {
+            let celula = $("th.ordination[data-ordination!='']");
+
+            let ordenacao = new Array();
+
+            if (celula.length == 1) {
+                let field = $(celula).attr("data-field-order");
+                let ordination = $(celula).attr("data-ordination");
+
+                ordenacao.push(new Array("campo", field));
+                ordenacao.push(new Array("ordenacao", ordination));
+            }
+
+            if (returnArray)
+                return ordenacao;
+            else
+                return arrayToUrlParameters(ordenacao);
+        }
+
         function atualizarPagina() {
-            let parametros = getParametrosFiltro(false);
-            location.href = '@Url.Action((string)ViewBag.Action, (string)@ViewBag.Controler)' + ((parametros != '') ? '?' + getParametrosFiltro(false) : '');
+            let parametros = getParametrosOrdenacao(false).trim();
+            parametros = parametros != "" ? parametros + "&" + getParametrosFiltro(false) : getParametrosFiltro(false);
+
+            location.href = '@Url.Action((string)ViewBag.Action, (string)@ViewBag.Controler)' + ((parametros != '') ? '?' + parametros : '');
         }
 
         function alterarPagina(page) {
-            let parametros = getParametrosFiltro(false);
-            location.href = '@Url.Action((string)ViewBag.Action, (string)@ViewBag.Controler)?page=' + page + ((parametros != '') ? '&' + getParametrosFiltro(false) : '');
+            let parametros = getParametrosOrdenacao(false).trim();
+            parametros = parametros != "" ? parametros + "&" + getParametrosFiltro(false) : getParametrosFiltro(false);
+
+            location.href = '@Url.Action((string)ViewBag.Action, (string)@ViewBag.Controler)?page=' + page + ((parametros != '') ? '&' + parametros : '');
         }
 
         function OpenModalAlterarUsuario(id) {
