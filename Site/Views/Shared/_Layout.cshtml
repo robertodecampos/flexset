@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<UserModel> userManager
+@{ 
+    UserModel userLogged = await userManager.GetUserAsync(User);
+}
+
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -31,7 +37,7 @@
                 </button>
                 <button id="btnCollapseNavUsuario" type="button" class="navbar-toggle btn-menu-usuario" data-toggle="collapse" data-target="#navUsuario">
                     <span class="sr-only">Opções do Usuário</span>
-                    @User.Identity.Name.Substring(0, 1).ToUpper() <span class="caret"></span>
+                    @userLogged.Nome.Substring(0, 1).ToUpper() <span class="caret"></span>
                 </button>
                 <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Site</a>
             </div>
@@ -44,7 +50,7 @@
                 <ul class="nav navbar-nav navbar-right visible-lg visible-md">
                     <li class="dropdown">
                         <a class="navbar-toggle btn-menu-usuario" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            @User.Identity.Name.Substring(0, 1).ToUpper() <span class="caret"></span>
+                            @userLogged.Nome.Substring(0, 1).ToUpper() <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a asp-area="" asp-controller="User" asp-action="@nameof(Site.Controllers.UserController.AlterLogged)">Alterar Minhas Informações</a></li>
