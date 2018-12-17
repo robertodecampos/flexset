@@ -6,7 +6,6 @@ using Site.Exceptions;
 using MySql.Data.MySqlClient;
 using System.Data;
 using Site.Models.UserViewModels;
-using Site.Utils;
 using System.Linq;
 
 namespace Site.DAO
