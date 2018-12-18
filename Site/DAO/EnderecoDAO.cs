@@ -76,7 +76,7 @@ namespace Site.DAO
                 throw new SiteValidateException("O endereco contém algumas inconsistências!");
 
             string sql = "UPDATE `Endereco` SET" +
-                         " `ufEstado` = @ufEstado, `idCidade` = @idCidade, `cep` = @cep, `logradouro` = @logradouro, `numero` = @numero, `complemento` = @complemento," +
+                         " `ufEstado` = @ufEstado, `idCidade` = @idCidade, `cep` = @cep, `logradouro` = @logradouro, `numero` = @numero, `complemento` = @complemento" +
                          " WHERE id = @id";
 
             var parameters = new List<MySqlParameter>();
