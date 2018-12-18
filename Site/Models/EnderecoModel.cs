@@ -39,6 +39,25 @@ namespace Site.Models
             return erros;
         }
 
+        public void Salvar(Connection conn, MySqlTransaction transaction = null)
+        {
+            using (var dao = new EnderecoDAO(conn))
+            {
+                if (Id == 0)
+                    dao.Insert(this, transaction);
+                else
+                    dao.Update(this, transaction);
+            }
+        }
+
+        public void Remove(Connection conn, MySqlTransaction transaction = null)
+        {
+            using (var dao = new EnderecoDAO(conn))
+            {
+                dao.Remove(this, transaction);
+            }
+        }
+
         public bool GetById(int id, Connection conn, MySqlTransaction transaction = null)
         {
             using (var dao = new EnderecoDAO(conn))
